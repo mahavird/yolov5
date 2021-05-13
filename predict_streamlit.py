@@ -7,7 +7,7 @@ from utils.general import check_img_size, check_requirements, check_imshow, non_
     scale_coords, xyxy2xywh, strip_optimizer, set_logging, increment_path, save_one_box
 from utils.datasets import LoadStreams, LoadImages
 from utils.plots import colors, plot_one_box
-
+import json
 
 device = "" #cuda
 imgsz = 640
@@ -98,6 +98,9 @@ def detect(path_request):
 
         print("Predicted",pred)
         # Process detections
+
+        dict_prediction = {}
+
         for i, det in enumerate(pred):  # detections per image
             if webcam:  # batch_size >= 1
                 p, s, im0, frame = path[i], f'{i}: ', im0s[i].copy(), dataset.count
@@ -114,6 +117,7 @@ def detect(path_request):
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
                 ans = ""
+                
                 class_cat = []
                 class_conf = []
                 for i,c in enumerate(det[:, -1]):
@@ -146,7 +150,13 @@ def detect(path_request):
                         plot_one_box(xyxy, im0, label=label, color=colors(c, True), line_thickness=opt.line_thickness)
                         if opt.save_crop:
                             save_one_box(xyxy, imc, file=save_dir / 'crops' / names[c] / f'{p.stem}.jpg', BGR=True)
-    return ans
+
+    # dict_prediction["class_cat"] = "".join((str(value) for value in class_cat))
+    print("ans",ans)
+    dict_prediction["class_cat"] = ans
+    dict_prediction["class_conf"] = "".join((str(value) for value in class_conf))
+    json_data = json.dumps(dict_prediction)
+    return json_data
 
 
 # if __name__ == '__main__':
